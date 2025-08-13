@@ -144,7 +144,9 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <BellIcon className="w-6 h-6 text-white" />
+                        <Link to="/admin/noNotifications">
+                            <BellIcon className="w-6 h-6 text-white" />
+                        </Link>
                         <button onClick={() => setIsOpen(true)}>
                             <Bars3Icon className="w-6 h-6 text-white" />
                         </button>
@@ -197,7 +199,9 @@ const AdminDashboard = () => {
 
                         {/* Right: Bell + Profile */}
                         <div className="flex items-center gap-5">
-                            <BellIcon className="w-6 h-6 text-white" />
+                            <Link to="/admin/noNotifications">
+                                <BellIcon className="w-6 h-6 text-white" />
+                            </Link>
                             <img
                                 src="/profile/Profile.png"
                                 alt="Profile"

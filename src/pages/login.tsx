@@ -151,6 +151,14 @@ function Login() {
                                 Signup Here
                             </Link>
                         </p>
+
+                        {/* Admin login Link */}
+                        <p className="text-sm text-center text-gray-400 mt-4">
+                            For admin login{" "}
+                            <Link to="/admin/login" className="text-pink-400 underline">
+                                Click Here
+                            </Link>
+                        </p>
                     </div>
                 </div>
             </div>

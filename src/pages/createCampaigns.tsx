@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
     BellIcon,
     SpeakerWaveIcon,
@@ -44,7 +44,7 @@ const CreateCampaigns = () => {
             alert("Please fill all fields and upload the files.");
             return;
         }
-        
+
         try {
             await createCampaign({
                 userId,
@@ -69,6 +69,29 @@ const CreateCampaigns = () => {
         }
     };
 
+    //Avatar
+    const [avatarUrl, setAvatarUrl] = useState("/profile/Profile.png"); // fallback
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const { uuid } = jwtDecode<any>(token) || {};
+            // filename is stored separately in localStorage after upload
+            const filename =
+                localStorage.getItem("avatar")
+                // or, if your JWT also contains it, fall back to that:
+                || (jwtDecode<any>(token)?.avatar as string | undefined);
+
+            if (uuid && filename) {
+                const url = `${import.meta.env.VITE_API_BASE_URL}public/avatar/${uuid}/${filename}`;
+                setAvatarUrl(url);
+            }
+        } catch (e) {
+            console.error("Failed to decode token / build avatar URL", e);
+        }
+    }, []);
 
     return (
         <div
@@ -164,12 +187,17 @@ const CreateCampaigns = () => {
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-semibold text-white">New Campaigns</h1>
                         <div className="flex items-center gap-5">
-                            <BellIcon className="w-6 h-6 text-white" />
-                            <img
-                                src="/profile/Profile.png"
-                                alt="Profile"
-                                className="w-12 h-12 rounded-full object-cover"
-                            />
+                            <Link to="/noNotifications">
+                                <BellIcon className="w-6 h-6 text-white" />
+                            </Link>
+                            <div className="bg-gradient-to-r from-pink-500 to-teal-400 rounded-full p-[1px]">
+                                <img
+                                    src={avatarUrl}
+                                    onError={(e) => (e.currentTarget.src = "/profile/Profile.png")} // graceful fallback
+                                    alt="Profile"
+                                    className="w-14 h-14 rounded-full object-cover"
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="mt-8 mb-10 w-full h-[1px] bg-gray-200/40" />

@@ -9,6 +9,7 @@ import QRGenerator from "./qrGenerator";
 import MusicRates from "./musicRates";
 import DriverAccount from "./DriverAccont";
 import ArtistAccount from "./ArtistAccount";
+import NoNotifications from "./Notifications";
 
 export default function AdminApp() {
   return (
@@ -23,6 +24,7 @@ export default function AdminApp() {
       <Route path="/admin/musicRates" element={<MusicRates />} />
       <Route path="/admin/DriverAccount" element={<DriverAccount />} />
       <Route path="/admin/ArtistAccount" element={<ArtistAccount />} />
+      <Route path="/admin/noNotifications" element={<NoNotifications />} />
     </Routes>
   );
 }

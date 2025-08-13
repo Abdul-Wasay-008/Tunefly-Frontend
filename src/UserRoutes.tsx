@@ -13,6 +13,7 @@ import IntegratedAccount from "./pages/integratedAccounts";
 import Faqs from "./pages/faqs";
 import QrLanding from "./pages/qrLanding";
 import VerifyScreen from "./pages/verifyScreen";
+import NoNotifications from "./pages/Notifications";
 
 export default function UserRoutes() {
   return (
@@ -31,6 +32,7 @@ export default function UserRoutes() {
       <Route path="/integratedAccounts" element={<IntegratedAccount />} />
       <Route path="/faqs" element={<Faqs />} />
       <Route path="/qrlanding" element={<QrLanding />} />
+      <Route path="/noNotifications" element={<NoNotifications />} />
     </Routes>
   );
 }
