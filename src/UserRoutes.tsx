@@ -14,10 +14,12 @@ import Faqs from "./pages/faqs";
 import QrLanding from "./pages/qrLanding";
 import VerifyScreen from "./pages/verifyScreen";
 import NoNotifications from "./pages/Notifications";
+import Landing from "./pages/landing";
 
 export default function UserRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verifyEmail" element={<VerifyScreen />} />

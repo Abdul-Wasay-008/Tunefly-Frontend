@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaMusic, FaUsers, FaCar, FaMoneyBillWave } from "react-icons/fa";
 import {
     BellIcon,
@@ -8,7 +8,6 @@ import {
     UserIcon,
     UserGroupIcon,
     QrCodeIcon,
-    CurrencyDollarIcon,
     ArrowRightStartOnRectangleIcon,
     MagnifyingGlassIcon,
     ArrowsUpDownIcon,
@@ -19,16 +18,66 @@ import { Dialog } from "@headlessui/react";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import LogoutModal from "./modals/LogoutModal";
+import { fetchAdminLogs } from "./api/adminLogs";
+import type { AdminLogs } from "./api/adminLogs";
+import { fetchArtistLibrary } from "./api/fetchArtistLibrary";
+import { approveTrack } from "./api/approveTrack";
 
 const AdminDashboard = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [tracks, setTracks] = useState<any[]>([]);
 
     const location = useLocation();
 
     const handleLogout = () => {
 
     };
+
+    const [logs, setLogs] = useState<AdminLogs | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetchArtistLibrary();
+                setTracks(res);
+            } catch (err: any) {
+                console.error("Failed to fetch artist library:", err);
+                setError("Failed to load tracks");
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, []);
+
+    const refreshTracks = async () => {
+        const res = await fetchArtistLibrary();
+        setTracks(res);
+    };
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetchAdminLogs();
+                setLogs(res);
+            } catch (err: any) {
+                console.error("Failed to fetch logs:", err);
+                setError("Failed to load dashboard data");
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, []);
+
+    if (loading) {
+        return <div className="text-white p-6">Loading dashboard...</div>;
+    }
+
+    if (error) {
+        return <div className="text-red-500 p-6">{error}</div>;
+    }
 
     return (
         <div
@@ -95,19 +144,7 @@ const AdminDashboard = () => {
                                 <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-teal-400 rounded-r"></span>
                             )}
                             <QrCodeIcon className="w-5 h-5" />
-                            <Link to="/admin/noQR">QR Codes</Link>
-                        </li>
-
-                        {/* Music Rates */}
-                        <li
-                            className={`relative flex items-center gap-3 px-4 py-2 rounded-r-full transition-all duration-300 cursor-pointer
-          ${location.pathname === '/admin/musicRates' ? 'bg-[#1F1F21] text-white' : 'hover:bg-[#1F1F21]/50'}`}
-                        >
-                            {location.pathname === '/admin/musicRates' && (
-                                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-teal-400 rounded-r"></span>
-                            )}
-                            <CurrencyDollarIcon className="w-5 h-5" />
-                            <Link to="/admin/musicRates">Music Rates</Link>
+                            <Link to="/admin/qrCode">QR Codes</Link>
                         </li>
                         <li className="ml-4 pt-2">
                             <button
@@ -175,11 +212,7 @@ const AdminDashboard = () => {
                                 </li>
                                 <li className="hover:text-pink-400 cursor-pointer py-4 px-1 flex items-center gap-3">
                                     <QrCodeIcon className="w-5 h-5" />
-                                    <Link to="/admin/noQR">QR Code</Link>
-                                </li>
-                                <li className="hover:text-pink-400 cursor-pointer py-4 px-1 flex items-center gap-3">
-                                    <CurrencyDollarIcon className="w-5 h-5" />
-                                    <Link to="/admin/musicRates">Music Rates</Link>
+                                    <Link to="/admin/qrCode">QR Code</Link>
                                 </li>
                                 <li className="hover:text-pink-400 cursor-pointer py-4 px-1 flex items-center gap-3">
                                     <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
@@ -223,7 +256,7 @@ const AdminDashboard = () => {
                   flex flex-col justify-between shadow-md">
                         <p className="text-sm md:text-base lg:text-sm text-gray-300">Total Drivers</p>
                         <div className="flex justify-between items-end">
-                            <span className="text-xl md:text-2xl font-bold">10</span>
+                            <span className="text-xl md:text-2xl font-bold">{logs?.totaldriver ?? 0}</span>
                             <FaCar className="text-teal-400 text-2xl md:text-3xl" />
                         </div>
                     </div>
@@ -234,7 +267,7 @@ const AdminDashboard = () => {
                   flex flex-col justify-between shadow-md">
                         <p className="text-sm md:text-base text-gray-300 lg:text-sm">Total Artists</p>
                         <div className="flex justify-between items-end">
-                            <span className="text-xl md:text-2xl font-bold">18</span>
+                            <span className="text-xl md:text-2xl font-bold">{logs?.totalartist ?? 0}</span>
                             <FaUsers className="text-pink-500 text-2xl md:text-3xl" />
                         </div>
                     </div>
@@ -245,7 +278,7 @@ const AdminDashboard = () => {
                   flex flex-col justify-between shadow-md">
                         <p className="text-sm md:text-base text-gray-300 lg:text-sm">Total Songs</p>
                         <div className="flex justify-between items-end">
-                            <span className="text-xl md:text-2xl font-bold">45</span>
+                            <span className="text-xl md:text-2xl font-bold">{logs?.totalsong ?? 0}</span>
                             <FaMusic className="text-pink-400 text-2xl md:text-3xl" />
                         </div>
                     </div>
@@ -256,7 +289,7 @@ const AdminDashboard = () => {
                   flex flex-col justify-between shadow-md">
                         <p className="text-sm md:text-base text-gray-300 lg:text-sm">Total Earnings</p>
                         <div className="flex justify-between items-end">
-                            <span className="text-xl md:text-2xl font-bold">12</span>
+                            <span className="text-xl md:text-2xl font-bold">${logs?.totalEarning?.toFixed(2) ?? "0.00"}</span>
                             <FaMoneyBillWave className="text-teal-400 text-2xl md:text-3xl" />
                         </div>
                     </div>
@@ -273,48 +306,53 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        {[1, 2].map((_, i) => (
-                            <div key={i} className="bg-gradient-to-r from-pink-500 to-teal-400 p-[1px] rounded-md">
+                        {tracks.map((track) => (
+                            <div
+                                key={track.uuid}
+                                className="bg-gradient-to-r from-pink-500 to-teal-400 p-[1px] rounded-md"
+                            >
                                 <div className="bg-[#1F1F21] p-4 rounded-md">
-                                    <h3 className="text-base font-semibold">Cruel Summer</h3>
-                                    <p className="text-sm text-gray-300">Taylor Swift</p>
-                                    <p className="text-xs text-gray-500">Pop</p>
-                                    <div className="flex justify-end gap-3">
-                                        <button className="w-6 h-6 rounded-full border border-green-400 text-green-400 text-sm hover:bg-green-400/10">✓</button>
-                                        <button className="w-6 h-6 rounded-full border border-pink-400 text-pink-400 text-sm hover:bg-pink-400/10">✕</button>
+                                    <h3 className="text-base font-semibold">{track.songname}</h3>
+                                    <p className="text-sm text-gray-300">{track.artistname}</p>
+                                    <div className="flex justify-end gap-3 mt-2">
+                                        {track.status === "Approved" ? (
+                                            <span className="text-green-400 text-xs font-semibold">Approved</span>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            await approveTrack(track.uuid, "Approved", track.userId);
+                                                            await refreshTracks();
+                                                        } catch (err) {
+                                                            console.error("Failed to approve:", err);
+                                                        }
+                                                    }}
+                                                    className="w-6 h-6 rounded-full border border-green-400 text-green-400 text-sm hover:bg-green-400/10"
+                                                >
+                                                    ✓
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            await approveTrack(track.uuid, "Rejected", track.userId);
+                                                            await refreshTracks();
+                                                        } catch (err) {
+                                                            console.error("Failed to reject:", err);
+                                                        }
+                                                    }}
+                                                    className="w-6 h-6 rounded-full border border-pink-400 text-pink-400 text-sm hover:bg-pink-400/10"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </div>
 
-                {/* Artist User Request */}
-                <div>
-                    <div className="flex items-center justify-between mb-4 lg:hidden">
-                        <h2 className="text-lg md:text-xl font-semibold">Artist User Request</h2>
-                        <button className="bg-gradient-to-r from-pink-500 to-teal-400 p-[1px] rounded-md">
-                            <div className="bg-[#1F1F21] px-4 py-1 rounded-md text-sm md:text-base">
-                                View all
-                            </div>
-                        </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 lg:hidden">
-                        {[1, 2].map((_, i) => (
-                            <div key={i} className="bg-gradient-to-r from-pink-500 to-teal-400 p-[1px] rounded-md">
-                                <div className="bg-[#1F1F21] p-4 rounded-md">
-                                    <h3 className="text-base font-semibold">Cruel Summer</h3>
-                                    <p className="text-sm text-gray-300">Taylor Swift</p>
-                                    <p className="text-xs text-gray-500">Pop</p>
-                                    <div className="flex justify-end gap-3">
-                                        <button className="w-6 h-6 rounded-full border border-green-400 text-green-400 text-sm hover:bg-green-400/10">✓</button>
-                                        <button className="w-6 h-6 rounded-full border border-pink-400 text-pink-400 text-sm hover:bg-pink-400/10">✕</button>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
 
                 {/* Desktop */}
@@ -361,37 +399,41 @@ const AdminDashboard = () => {
                                         <th className="px-6 py-3">Track Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-gradient-to-b from-[#111112] to-[#1A1A1B]">
-                                    {[1, 2, 3, 4].map((num, index) => (
-                                        <tr key={index} className="border-t border-gray-700">
-                                            <td className="px-6 py-2">{num}</td>
-                                            <td className="px-6 py-2">Taylor Swift</td>
-                                            <td className="px-6 py-2">Cruel Summer</td>
-                                            <td className="px-6 py-2">Pop</td>
+                                <tbody className="bg-[#111112]">
+                                    {tracks.map((track, idx) => (
+                                        <tr key={track.uuid} className="border-t border-gray-700">
+                                            <td className="px-6 py-2">{idx + 1}</td>
+                                            <td className="px-6 py-2">{track.artistname}</td>
+                                            <td className="px-6 py-2">{track.songname}</td>
+                                            <td className="px-6 py-2">{track.genre}</td>
+                                            <td className="px-6 py-2">{track.country}</td>
                                             <td className="px-6 py-2">
-                                                {index === 1 ? "UK" : index === 3 ? "Canada" : "USA"}
-                                            </td>
-                                            <td className="px-6 py-2">
-                                                <td className="px-6 py-2">
-                                                    {index % 2 === 0 ? (
-                                                        // Show Approved
-                                                        <span className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-teal-400 text-white text-xs font-semibold px-4 py-1 rounded-full">
-                                                            <span className="w-2 h-2 bg-white rounded-full"></span>
-                                                            Approved
-                                                        </span>
-                                                    ) : (
-                                                        // Show Pending
-                                                        <span className="inline-flex items-center gap-2 bg-[#D9D9D9] text-black text-xs font-semibold px-4 py-1 rounded-full">
-                                                            <span className="w-2 h-2 bg-black rounded-full"></span>
-                                                            Pending
-                                                        </span>
-                                                    )}
-                                                </td>
-
+                                                {track.status === "Approved" ? (
+                                                    <span className="inline-flex items-center gap-2 bg-green-600 text-white text-xs font-semibold px-4 py-1 rounded-full">
+                                                        Approved
+                                                    </span>
+                                                ) : (
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await approveTrack(track.uuid, "Approved", track.userId);
+                                                                    await refreshTracks(); // reload the updated list
+                                                                } catch (err) {
+                                                                    console.error("Failed to approve track:", err);
+                                                                }
+                                                            }}
+                                                            className="bg-green-600 hover:bg-green-500 text-xs px-3 py-1 rounded"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
+
                             </table>
                         </div>
                     </div>

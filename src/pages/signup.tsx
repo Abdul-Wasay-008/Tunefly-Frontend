@@ -34,8 +34,8 @@ function Signup() {
         try {
             const response = await signup(form);
             setMessage(response.user); // "Account create successfully && Otp send"
-            // Optionally redirect to OTP page here
-            navigate('/login');
+            // Redirection
+            navigate('/verifyEmail', { state: { email: form.email } });
         } catch (error: any) {
             const errMsg = error.response?.data || 'Signup failed.';
             setMessage(typeof errMsg === 'string' ? errMsg : 'Something went wrong.');

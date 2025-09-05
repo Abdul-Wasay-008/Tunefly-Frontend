@@ -24,6 +24,27 @@ import { jwtDecode } from "jwt-decode";
 import { getUserDetails } from "../api/getUserProfile";
 import { updateUserPassword } from "../api/updatePasswordApi";
 import { deleteAccount } from "../api/deleteAccountApi";
+import axios from "axios";
+
+type ManageArtistProfile = {
+    userId: string;
+    instagram?: string | null;
+    twitter?: string | null;
+    tiktok?: string | null;
+    spotify?: string | null;
+    apple?: string | null;
+    soundcloud?: string | null;
+};
+
+// the six link fields only (exclude userId)
+type LinkField = keyof Omit<ManageArtistProfile, "userId">;
+
+// server response for GET /manageprofile (Option A returns an array)
+type GetManageProfileResp = {
+    status: string;
+    manageprofile: ManageArtistProfile[];
+};
+
 
 const Settings = () => {
     const location = useLocation();
@@ -51,6 +72,84 @@ const Settings = () => {
     //Deleting feature
     const [deleting, setDeleting] = useState(false);
     const [deleteMsg, setDeleteMsg] = useState<string | null>(null);
+
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+    const MANAGE_API = `${API_BASE}api/user/artist/manageprofile`;
+
+    const PLATFORM_META: Array<{ key: LinkField; label: string; icon: string }> = [
+        { key: "spotify", label: "Spotify", icon: "/assets/Spotify_icon.svg" },
+        { key: "apple", label: "Apple Music", icon: "/assets/AMusic_icon.svg" },
+        { key: "instagram", label: "Instagram", icon: "/assets/instagram.png" },
+        { key: "twitter", label: "Twitter (X)", icon: "/assets/TwitterX.svg" },
+        { key: "tiktok", label: "TikTok", icon: "/assets/tiktok.png" },
+        { key: "soundcloud", label: "SoundCloud", icon: "/assets/soundcloud.png" },
+    ];
+
+    const URL_TESTS: Record<LinkField, (u: string) => boolean> = {
+        instagram: (u) => /^https?:\/\/(www\.)?instagram\.com\/.*/i.test(u),
+        twitter: (u) => /^https?:\/\/(www\.)?twitter\.com\/.*/i.test(u),
+        tiktok: (u) => /^https?:\/\/(www\.)?tiktok\.com\/.*/i.test(u),
+        spotify: (u) => /^https?:\/\/(open\.)?spotify\.com\/.*/i.test(u),
+        apple: (u) => /^https?:\/\/(music\.)?apple\.com\/.*/i.test(u),
+        soundcloud: (u) => /^https?:\/\/(www\.)?soundcloud\.com\/.*/i.test(u),
+    };
+
+    // Integrated Accounts state
+    const [mpRow, setMpRow] = useState<ManageArtistProfile | null>(null);
+    const [iaInputs, setIaInputs] = useState<Record<string, string>>({});
+    const [iaBusyKey, setIaBusyKey] = useState<string | null>(null);
+
+    const loadManageProfile = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const { uuid } = jwtDecode<any>(token) || {};
+
+        try {
+            const res = await axios.get<GetManageProfileResp>(MANAGE_API, {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { userId: uuid },
+            });
+
+            const list = res.data?.manageprofile ?? [];
+            const row = list[0] ?? { userId: uuid };
+            setMpRow(row);
+        } catch (e) {
+            console.error(e);
+            setMpRow({ userId: uuid });
+        }
+    };
+
+    useEffect(() => { loadManageProfile(); }, []);
+
+    const savePlatformLink = async (platformKey: LinkField) => {
+        const url = (iaInputs[platformKey] || "").trim();
+        if (!url) return;
+
+        const tester = URL_TESTS[platformKey];
+        if (!tester(url)) {
+            alert(`Please paste a valid ${platformKey} link.`);
+            return;
+        }
+
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const { uuid } = jwtDecode<any>(token) || {};
+
+        setIaBusyKey(platformKey);
+        try {
+            await axios.post(
+                MANAGE_API,
+                { userId: uuid, link: url }, // backend auto-detects the platform
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setIaInputs((s) => ({ ...s, [platformKey]: "" }));
+            await loadManageProfile();
+        } catch (e: any) {
+            alert(e?.response?.data?.message || "Could not save link");
+        } finally {
+            setIaBusyKey(null);
+        }
+    };
 
     // click handler
     const onConfirmDelete = async () => {
@@ -625,65 +724,102 @@ const Settings = () => {
                     {/* Row 4: Integrated Accounts */}
                     <div className="flex flex-col">
                         <h2 className="text-2xl font-semibold">Integrated Accounts</h2>
-                        <div className="text-xs text-gray-400 mt-2 mb-8">Manage your current integrated accounts</div>
+                        <div className="text-xs text-gray-400 mt-2 mb-8">
+                            Paste the link for each platform you use. Once saved, the card flips to Connected.
+                        </div>
 
-                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-6">
-                            {/* Spotify */}
-                            <div className="p-[1px] rounded-lg bg-gradient-to-r from-pink-500 to-teal-400">
-                                <div className="flex items-center justify-between px-4 py-3 bg-[#1f1f21] rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <img
-                                            src="/assets/Spotify_icon.svg"
-                                            alt="Spotify"
-                                            className="w-14 h-14"
-                                        />
-                                        <span>Spotify</span>
-                                    </div>
-                                    {/* Gradient‑border “Connected” pill */}
-                                    <div className="p-[1px] rounded-md bg-gradient-to-r from-pink-500 to-teal-400">
-                                        <span className="block bg-[#1f1f21] text-xs text-white px-3 py-1 rounded-md">
-                                            Connected
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+                            {PLATFORM_META.map(({ key, label, icon }) => {
+                                const connectedUrl = (mpRow?.[key] ?? undefined) as string | undefined;
+                                const val = iaInputs[key] ?? "";
+                                const valid = val ? URL_TESTS[key](val) : false;
+                                const busy = iaBusyKey === key;
 
-                            {/* Apple Music */}
-                            <div className="p-[1px] rounded-lg bg-gradient-to-r from-pink-500 to-teal-400">
-                                <div className="flex items-center justify-between px-4 py-3 bg-[#1f1f21] rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <img
-                                            src="/assets/AMusic_icon.svg"
-                                            alt="Apple Music"
-                                            className="w-14 h-14"
-                                        />
-                                        <span>Apple Music</span>
-                                    </div>
+                                // helper to show a short, clean URL
+                                const displayUrl =
+                                    connectedUrl
+                                        ? (() => {
+                                            try {
+                                                const u = new URL(connectedUrl);
+                                                const short = `${u.hostname}${u.pathname}`.replace(/\/$/, "");
+                                                return short.length > 38 ? short.slice(0, 36) + "…" : short;
+                                            } catch { return connectedUrl.length > 38 ? connectedUrl.slice(0, 36) + "…" : connectedUrl; }
+                                        })()
+                                        : null;
 
-                                    {/* Gradient‑border “Connected” pill */}
-                                    <div className="p-[1px] rounded-md bg-gradient-to-r from-pink-500 to-teal-400">
-                                        <span className="block bg-[#1f1f21] text-xs text-white px-3 py-1 rounded-md">
-                                            Connected
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                                return (
+                                    <div key={key} className="h-full">
+                                        {/* gradient border */}
+                                        <div className="relative h-full rounded-xl bg-gradient-to-r from-pink-500/70 to-teal-400/70 p-[1px]">
+                                            {/* card body */}
+                                            <div className="h-full rounded-xl bg-[#1f1f21] px-4 py-4 flex flex-col">
+                                                {/* status pill pinned */}
+                                                <span
+                                                    className={`absolute top-2 right-3 text-[11px] px-2.5 py-1 rounded-md border
+                  ${connectedUrl
+                                                            ? "border-teal-400/50 text-teal-300"
+                                                            : "border-white/20 text-white/70"}`}
+                                                >
+                                                    {connectedUrl ? "Connected" : "Not connected"}
+                                                </span>
 
-                            {/* Paste your link */}
-                            <div className="p-[1px] rounded-lg bg-gradient-to-r from-pink-500 to-teal-400">
-                                <div className="flex items-center justify-between px-4 py-3 bg-[#1f1f21] rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <img src="/assets/Clip.svg" alt="Link" className="w-14 h-14" />
-                                        <span>Paste your link</span>
+                                                {/* header */}
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <img src={icon} alt={label} className="w-10 h-10" />
+                                                    <div className="min-w-0">
+                                                        <div className="font-medium">{label}</div>
+                                                        {connectedUrl && (
+                                                            <a
+                                                                href={connectedUrl}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                title={connectedUrl}
+                                                                className="block text-xs text-white/70 underline truncate max-w-[220px]"
+                                                            >
+                                                                {displayUrl}
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* input row */}
+                                                <div className="mt-3">
+                                                    <label className="text-xs text-white/60 mb-2 block">
+                                                        Paste your {label} link
+                                                    </label>
+
+                                                    {/* Stack (column) by default; switch to row on very large screens */}
+                                                    <div className="flex flex-col 2xl:flex-row gap-2">
+                                                        <input
+                                                            value={val}
+                                                            onChange={(e) => setIaInputs((s) => ({ ...s, [key]: e.target.value }))}
+                                                            placeholder="https://…"
+                                                            className="flex-1 bg-black/30 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-teal-400/40"
+                                                        />
+                                                        <button
+                                                            onClick={() => savePlatformLink(key)}
+                                                            disabled={!valid || busy}
+                                                            className={`w-full xl:w-auto px-4 py-2 rounded-md text-sm font-semibold transition
+        ${valid && !busy
+                                                                    ? "bg-gradient-to-r from-pink-500 to-teal-400 text-white hover:opacity-95"
+                                                                    : "bg-white/10 text-white/60 cursor-not-allowed"}`}
+                                                        >
+                                                            {connectedUrl ? (busy ? "Saving…" : "Change") : (busy ? "Saving…" : "Connect")}
+                                                        </button>
+                                                    </div>
+
+                                                    {!!val && !valid && (
+                                                        <p className="text-xs mt-2 text-red-400">That doesn’t look like a {label} URL.</p>
+                                                    )}
+                                                    {!!val && valid && (
+                                                        <p className="text-xs mt-2 text-emerald-400">Looks good.</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    {/* Gradient‑border “Connected” pill */}
-                                    <div className="p-[1px] rounded-md bg-gradient-to-r from-pink-500 to-teal-400">
-                                        <span className="block bg-[#1f1f21] text-xs text-white px-3 py-1 rounded-md">
-                                            Connected
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

@@ -92,17 +92,6 @@ const NoQR = () => {
                             <Link to="/admin/noQR">QR Codes</Link>
                         </li>
 
-                        {/* Music Rates */}
-                        <li
-                            className={`relative flex items-center gap-3 px-4 py-2 rounded-r-full transition-all duration-300 cursor-pointer
-          ${location.pathname === '/admin/musicRates' ? 'bg-[#1F1F21] text-white' : 'hover:bg-[#1F1F21]/50'}`}
-                        >
-                            {location.pathname === '/admin/musicRates' && (
-                                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-teal-400 rounded-r"></span>
-                            )}
-                            <CurrencyDollarIcon className="w-5 h-5" />
-                            <Link to="/admin/musicRates">Music Rates</Link>
-                        </li>
                         <li className="ml-4 pt-2">
                             <button
                                 onClick={() => setShowModal(true)}
