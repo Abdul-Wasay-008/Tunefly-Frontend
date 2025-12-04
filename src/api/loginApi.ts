@@ -30,7 +30,7 @@ export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
   const response = await axios.post<LoginResponse>(
     `${import.meta.env.VITE_API_BASE_URL}api/auth/login`,
     payload,
-    { withCredentials: true }
+    { withCredentials: false }
   );
 
   return response.data;

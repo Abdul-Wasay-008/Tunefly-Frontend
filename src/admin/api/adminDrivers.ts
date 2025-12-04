@@ -26,7 +26,6 @@ export async function fetchAllDrivers(): Promise<DriverUser[]> {
         `${BASE}/api/admin/alldriver`,
         {
             headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
         }
     );
 

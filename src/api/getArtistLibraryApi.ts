@@ -33,7 +33,6 @@ export const getArtistLibrary = async (token: string): Promise<Campaign[]> => {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            withCredentials: true,
         }
     );
 

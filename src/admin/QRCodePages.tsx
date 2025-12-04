@@ -54,8 +54,8 @@ const QRCodesPage = () => {
 
     // Codes
     const [codes, setCodes] = useState<QrRow[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [err, setErr] = useState<string | null>(null);
+    const [, setLoading] = useState(false);
+    const [, setErr] = useState<string | null>(null);
 
     // Drivers + name lookup
     const [drivers, setDrivers] = useState<Driver[]>([]);

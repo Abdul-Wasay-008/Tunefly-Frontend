@@ -19,7 +19,6 @@ export async function fetchAdminLogs(): Promise<AdminLogs> {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            withCredentials: true,
         }
     );
 

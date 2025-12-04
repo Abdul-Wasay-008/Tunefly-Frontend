@@ -230,7 +230,7 @@ export default function Landing() {
 
                                 {/* Links */}
                                 <div className="mt-12 text-sm space-y-6">
-                                    <a href="/privacy" className="block text-gray-400 underline underline-offset-2">Privacy Policy</a>
+                                    <Link to="/privacypolicy"><div className="block text-gray-400 underline underline-offset-2">Privacy Policy</div></Link>
                                     <a href="/terms" className="block text-gray-400 underline underline-offset-2">Terms &amp; Conditions</a>
                                     <p className="text-gray-400">Copyright©2025@tunefly. All rights reserved.</p>
                                 </div>
@@ -409,9 +409,7 @@ export default function Landing() {
                             </p>
 
                             <div className="mt-8 space-y-3 text-sm">
-                                <a href="/privacy" className="block text-gray-400 underline underline-offset-2">
-                                    Privacy Policy
-                                </a>
+                                <Link to="/privacypolicy"><div className="block text-gray-400 underline underline-offset-2">Privacy Policy</div></Link>
                                 <a href="/terms" className="block text-gray-400 underline underline-offset-2">
                                     Terms &amp; Conditions
                                 </a>

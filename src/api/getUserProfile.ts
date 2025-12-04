@@ -20,7 +20,6 @@ export const getUserDetails = async (token: string): Promise<UserDetails> => {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            withCredentials: true,
         }
     );
 

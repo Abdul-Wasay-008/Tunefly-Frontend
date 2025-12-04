@@ -26,7 +26,6 @@ export async function adminLogin(
     const { data } = await axios.post<ServerShapeA | ServerShapeB>(
         `${BASE}/api/auth/login`,
         { email, password, usertype: "admin" },
-        { withCredentials: true }
     );
 
     // Normalize response

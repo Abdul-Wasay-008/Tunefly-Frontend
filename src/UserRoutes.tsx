@@ -15,11 +15,13 @@ import QrLanding from "./pages/qrLanding";
 import VerifyScreen from "./pages/verifyScreen";
 import NoNotifications from "./pages/Notifications";
 import Landing from "./pages/landing";
+import PrivacyPolicy from "./pages/privacyPolicy";
 
 export default function UserRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/privacypolicy" element={<PrivacyPolicy />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verifyEmail" element={<VerifyScreen />} />

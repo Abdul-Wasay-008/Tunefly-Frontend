@@ -27,7 +27,6 @@ export async function fetchAllArtists(): Promise<ArtistUser[]> {
         `${BASE}/api/admin/allartist`,
         {
             headers: { Authorization: `Bearer ${token}` },
-            withCredentials: true,
         }
     );
 

@@ -16,33 +16,23 @@ import { jwtDecode } from "jwt-decode";
 
 const faqData = [
     {
-        question: "What is the referral program?",
+        question: "How do I create and manage an artist profile on TuneFly?",
         answer:
-            "Maecenas malesuada tellus eu posuere vehicula. Nam nec dapibus nisi, quis efficitur ante. Duis nec bibendum eros. Proin euismod nulla a massa facilisis, non vestibulum augue auctor. Ut ornare at est ac ullamcorper.",
+            "You can sign up as an artist using your email and password. Once logged in, head to the Artist Dashboard where you can upload songs, manage your artist library, and update details like genre, country, and profile information. Admins verify and approve uploads to maintain quality.",
     },
     {
-        question: "How it works?",
-        answer: (
-            <>
-                Maecenas malesuada tellus eu posuere vehicula. Nam nec dapibus nisi, quis efficitur ante:
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                    <li>Tell your friends about Gastos Provider Club and register them on the app.</li>
-                    <li>Complete all the steps of registration including payment for registration.</li>
-                    <li>Go to the Manage Account Section in Settings page and enter your registered phone number and validate there.</li>
-                    <li>You can check in your wallet that you have received Rs 150 in your wallet.</li>
-                </ul>
-            </>
-        )
+        question: "Is TuneFly only for artists, or can listeners also use it?",
+        answer: "TuneFly is designed for both. Artists can upload and showcase their work, while listeners can explore music, follow their favorite creators, and engage with content through playlists and recommendations. Future updates will bring even more listener-focused features."
     },
     {
-        question: "Where could I use these coins?",
+        question: "How secure is my data on TuneFly?",
         answer:
-            "Navigate to Analytics in the sidebar. You’ll find detailed stats on impressions, clicks, and engagement.",
+            "Your information is stored securely in our production-grade database hosted on AWS RDS. Authentication is handled through encrypted tokens, and sensitive operations (like admin logins and uploads) are restricted to authorized accounts only. We continuously monitor and improve our security to protect your data.",
     },
     {
-        question: "Is there a limit to how many campaigns I can run?",
+        question: "What should I do if I face errors while using the platform?",
         answer:
-            "No, you can run as many campaigns as you'd like, but we recommend spacing them out to maximize engagement.",
+            "Most errors occur when the system is being updated or when login/authentication fails. If you see issues like “401 Unauthorized” or resources not loading, try refreshing your browser or clearing cache. If the problem persists, contact our support team through the Help section or email us at tuneflyadmin@gmail.com.",
     },
 ];
 

@@ -8,7 +8,6 @@ import {
     ChevronRightIcon,
     UserGroupIcon,
     QrCodeIcon,
-    CurrencyDollarIcon,
     PowerIcon,
 } from "@heroicons/react/24/outline";
 import { useLocation, useNavigate, Link } from "react-router-dom";

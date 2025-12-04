@@ -4,7 +4,6 @@ import {
     ArrowLeftCircleIcon,
     UserGroupIcon,
     QrCodeIcon,
-    CurrencyDollarIcon,
     UserIcon,
     PowerIcon
 } from "@heroicons/react/24/outline";

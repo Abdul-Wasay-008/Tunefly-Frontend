@@ -25,7 +25,7 @@ export const fetchDashboard = async (): Promise<DashboardResponse> => {
 
     try {
         const res = await api.get<ServerEnvelope>("/api/user/artist/dashboard", {
-            params: { userId },                          // <-- query string ?userId=...
+            // params: { userId },                          // <-- query string ?userId=...
             headers: { Authorization: `Bearer ${token}` } // <-- include if your api instance doesn't
         });
 
